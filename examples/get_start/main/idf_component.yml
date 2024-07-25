@@ -1,0 +1,6 @@
+description: esp_htpa_lcd
+dependencies:
+  idf: ">=5.2"
+  larryli/bsp_generic:
+    version: "*"
+    override_path: "../../../"

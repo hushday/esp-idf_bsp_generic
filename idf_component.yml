@@ -1,0 +1,8 @@
+version: "1.0.0"
+description: Board Support Package (generic)
+
+dependencies:
+  idf: ">=5.2"
+  esp_lcd_ili9341:  "^1"
+  esp_lcd_gc9a01:   "^1"
+  esp_lvgl_port: "^2"

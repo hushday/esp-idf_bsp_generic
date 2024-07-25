@@ -1,0 +1,221 @@
+menu "Board Support Package (generic)"
+
+    orsource "$IDF_PATH/examples/common_components/env_caps/$IDF_TARGET/Kconfig.env_caps"
+
+    config BSP_ERROR_CHECK
+        bool "Enable error check in BSP"
+        default y
+        help
+            Error check assert the application before returning the error code.
+
+    menu "I2C"
+        menu "Pins"
+            config BSP_I2C_GPIO_SCL
+                int "I2C GPIO SCL"
+                default -1
+                range -1 ENV_GPIO_OUT_RANGE_MAX
+                help
+                    The GPIO pin for I2C SCL.
+            config BSP_I2C_GPIO_SDA
+                int "I2C GPIO SDA"
+                default -1
+                range -1 ENV_GPIO_OUT_RANGE_MAX
+                help
+                    The GPIO pin for I2C SDA.
+        endmenu
+        config BSP_I2C_NUM
+            int "I2C peripheral index"
+            default 1
+            range 0 1
+            help
+                ESP32 has two I2C peripherals, pick the one you want to use.
+    endmenu
+
+    menu "Display"
+        menu "Connection"
+
+            config BSP_DISPLAY_SCLK_GPIO
+                int
+                prompt "Display SPI SCLK GPIO"
+                default 0
+                range -1 ENV_GPIO_OUT_RANGE_MAX
+                help
+                    The SCLK pin for SPI display.
+
+            config BSP_DISPLAY_MOSI_GPIO
+                int
+                prompt "Display SPI MOSI GPIO"
+                default 0
+                range -1 ENV_GPIO_OUT_RANGE_MAX
+                help
+                    The MOSI pin for SPI display.
+
+            config BSP_DISPLAY_MISO_GPIO
+                int
+                prompt "Display SPI MISO GPIO"
+                default 0
+                range -1 ENV_GPIO_OUT_RANGE_MAX
+                help
+                    The MISO pin for SPI display(not used).
+
+            config BSP_DISPLAY_CS_GPIO
+                int
+                prompt "Display SPI CS GPIO"
+                default 0
+                range -1 ENV_GPIO_OUT_RANGE_MAX
+                help
+                    The CS pin for SPI display.
+
+            config BSP_DISPLAY_DC_GPIO
+                int
+                prompt "Display SPI DC GPIO"
+                default 0
+                range -1 ENV_GPIO_OUT_RANGE_MAX
+                help
+                    The DC pin for SPI display.
+
+            config BSP_DISPLAY_RST_GPIO
+                int
+                prompt "Display reset GPIO"
+                default 0
+                range -1 ENV_GPIO_OUT_RANGE_MAX
+                help
+                    The reset pin for display.
+
+            config BSP_DISPLAY_BACKLIGHT_GPIO
+                int
+                prompt "Display backlight GPIO"
+                default -1
+                range -1 ENV_GPIO_OUT_RANGE_MAX
+                help
+                    The backlight pin for display.
+        endmenu
+
+        choice
+            prompt "Display driver"
+            help
+                Select a display driver
+            config BSP_DISPLAY_DRIVER_ST7789
+                bool "ST7789"
+            config BSP_DISPLAY_DRIVER_ST7735
+                bool "ST7735"
+            config BSP_DISPLAY_DRIVER_ILI9341
+                bool "ILI9341"
+            config BSP_DISPLAY_DRIVER_GC9A01
+                bool "GC9A01"
+        endchoice
+
+        menu "Rotation"
+            config BSP_DISPLAY_ROTATION_SWAP_XY
+                bool "Swap XY"
+                default n
+                help
+                    Swap X and Y axis on the screen.
+
+            config BSP_DISPLAY_ROTATION_MIRROR_X
+                bool "Mirror X"
+                default n
+                help
+                    Mirror X axis on the screen.
+
+            config BSP_DISPLAY_ROTATION_MIRROR_Y
+                bool "Mirror Y"
+                default n
+                help
+                    Mirror Y axis on the screen.
+        endmenu
+
+        choice
+            prompt "Color space"
+            help
+                Select a display color space
+            config BSP_DISPLAY_COLOR_SPACE_RGB
+                bool "RGB"
+            config BSP_DISPLAY_COLOR_SPACE_BGR
+                bool "BGR"
+        endchoice
+
+        config BSP_DISPLAY_INVERT_COLOR
+            bool "Invert colors"
+            default n
+            help
+                Invert colors of the screen.
+
+        config BSP_DISPLAY_BRIGHTNESS_INVERT
+            bool "Invert brightness level"
+            default n
+            help
+                Invert brightness level of the screen.
+
+        config BSP_DISPLAY_CMD_BITS
+            int
+            default 8
+            help
+                The command bits of the display.
+
+        config BSP_DISPLAY_PARAM_BITS
+            int
+            default 8
+            help
+                The param bits of the display.
+
+        config BSP_DISPLAY_PIXEL_CLOCK
+            int
+            prompt "Display pixel clock (MHz)"
+            default 20
+            range 1 80
+            help
+                The pixel clock of the display in MHz.
+
+        config BSP_DISPLAY_WIDTH
+            int
+            prompt "Display width"
+            default 320
+            help
+                The width in pixels of the display.
+
+        config BSP_DISPLAY_HEIGHT
+            int
+            prompt "Display height"
+            default 240
+            help
+                The height in pixels of the display.
+
+        config BSP_DISPLAY_X_GAP
+            int
+            prompt "Display x gap"
+            default 0
+            help
+                The x gap in pixels of the display.
+
+        config BSP_DISPLAY_Y_GAP
+            int
+            prompt "Display y gap"
+            default 0
+            help
+                The y gap in pixels of the display.
+
+        config BSP_DISPLAY_BRIGHTNESS_LEDC_CH
+            depends on BSP_DISPLAY_BACKLIGHT_GPIO != -1
+            int "LEDC channel index for brightness control"
+            default 1
+            range 0 7
+            help
+                LEDC channel is used to generate PWM signal that controls display brightness.
+                Set LEDC index that should be used.
+
+        config BSP_LCD_DRAW_BUF_HEIGHT
+            int "LCD framebuf height"
+            default 100
+            range 10 240
+            help
+                Framebuf is used for lvgl rendering output (rows).
+
+        config BSP_LCD_DRAW_BUF_DOUBLE
+            bool "LCD double framebuf"
+            default n
+            help
+                Whether to enable double framebuf.
+    endmenu
+
+endmenu
