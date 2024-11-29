@@ -35,56 +35,42 @@ menu "Board Support Package (generic)"
         menu "Connection"
 
             config BSP_DISPLAY_SCLK_GPIO
-                int
-                prompt "Display SPI SCLK GPIO"
+                int "Display SPI SCLK GPIO"
                 default 0
                 range -1 ENV_GPIO_OUT_RANGE_MAX
                 help
                     The SCLK pin for SPI display.
 
             config BSP_DISPLAY_MOSI_GPIO
-                int
-                prompt "Display SPI MOSI GPIO"
+                int "Display SPI MOSI GPIO"
                 default 0
                 range -1 ENV_GPIO_OUT_RANGE_MAX
                 help
                     The MOSI pin for SPI display.
 
-            config BSP_DISPLAY_MISO_GPIO
-                int
-                prompt "Display SPI MISO GPIO"
-                default 0
-                range -1 ENV_GPIO_OUT_RANGE_MAX
-                help
-                    The MISO pin for SPI display(not used).
-
             config BSP_DISPLAY_CS_GPIO
-                int
-                prompt "Display SPI CS GPIO"
+                int "Display SPI CS GPIO"
                 default 0
                 range -1 ENV_GPIO_OUT_RANGE_MAX
                 help
                     The CS pin for SPI display.
 
             config BSP_DISPLAY_DC_GPIO
-                int
-                prompt "Display SPI DC GPIO"
+                int "Display SPI DC GPIO"
                 default 0
                 range -1 ENV_GPIO_OUT_RANGE_MAX
                 help
                     The DC pin for SPI display.
 
             config BSP_DISPLAY_RST_GPIO
-                int
-                prompt "Display reset GPIO"
+                int "Display reset GPIO"
                 default 0
                 range -1 ENV_GPIO_OUT_RANGE_MAX
                 help
                     The reset pin for display.
 
             config BSP_DISPLAY_BACKLIGHT_GPIO
-                int
-                prompt "Display backlight GPIO"
+                int "Display backlight GPIO"
                 default -1
                 range -1 ENV_GPIO_OUT_RANGE_MAX
                 help
@@ -160,16 +146,14 @@ menu "Board Support Package (generic)"
                 The param bits of the display.
 
         config BSP_DISPLAY_PIXEL_CLOCK
-            int
-            prompt "Display pixel clock (MHz)"
+            int "Display pixel clock (MHz)"
             default 20
             range 1 80
             help
                 The pixel clock of the display in MHz.
 
         config BSP_DISPLAY_WIDTH
-            int
-            prompt "Display width"
+            int "Display width"
             default 320
             help
                 The width in pixels of the display.
@@ -181,19 +165,25 @@ menu "Board Support Package (generic)"
             help
                 The height in pixels of the display.
 
-        config BSP_DISPLAY_X_GAP
-            int
-            prompt "Display x gap"
-            default 0
+        config BSP_DISPLAY_GAP_SET
+            bool "Set extra gap"
+            default n
             help
-                The x gap in pixels of the display.
+                Set extra gap in x and y axis.
 
-        config BSP_DISPLAY_Y_GAP
-            int
-            prompt "Display y gap"
+        config BSP_DISPLAY_GAP_X
+            depends on BSP_DISPLAY_GAP_SET
+            int "Extra gap on y axis"
             default 0
             help
-                The y gap in pixels of the display.
+                Extra gap on x axis, in pixels.
+
+        config BSP_DISPLAY_GAP_Y
+            depends on BSP_DISPLAY_GAP_SET
+            int "Extra gap on y axis"
+            default 0
+            help
+                Extra gap on y axis, in pixels.
 
         config BSP_DISPLAY_BRIGHTNESS_LEDC_CH
             depends on BSP_DISPLAY_BACKLIGHT_GPIO != -1
