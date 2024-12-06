@@ -22,6 +22,9 @@ esp_lcd_new_panel_st7735(const esp_lcd_panel_io_handle_t io,
 #include "esp_lcd_ili9341.h"
 #elif CONFIG_BSP_DISPLAY_DRIVER_GC9A01
 #include "esp_lcd_gc9a01.h"
+#elif CONFIG_BSP_DISPLAY_DRIVER_GC9107
+#include "esp_lcd_gc9a01.h"
+extern gc9a01_vendor_config_t gc9107_vendor_config;
 #endif
 
 static const char *TAG = "bsp_generic";
@@ -172,6 +175,9 @@ esp_err_t bsp_display_new(const bsp_display_config_t *config,
         .reset_gpio_num = BSP_LCD_RST,
         .color_space = BSP_LCD_COLOR_SPACE,
         .bits_per_pixel = BSP_LCD_BITS_PER_PIXEL,
+#if CONFIG_BSP_DISPLAY_DRIVER_GC9107
+        .vendor_config = &gc9107_vendor_config,
+#endif
     };
 #if CONFIG_BSP_DISPLAY_DRIVER_ST7789
     ESP_GOTO_ON_ERROR(
@@ -193,6 +199,11 @@ esp_err_t bsp_display_new(const bsp_display_config_t *config,
         esp_lcd_new_panel_gc9a01(*ret_io, &panel_config, ret_panel), err, TAG,
         "New panel failed");
     ESP_LOGI(TAG, "Initialize LCD: GC9A01");
+#elif CONFIG_BSP_DISPLAY_DRIVER_GC9107
+    ESP_GOTO_ON_ERROR(
+        esp_lcd_new_panel_gc9a01(*ret_io, &panel_config, ret_panel), err, TAG,
+        "New panel failed");
+    ESP_LOGI(TAG, "Initialize LCD: GC9107");
 #endif
     esp_lcd_panel_reset(*ret_panel);
     esp_lcd_panel_init(*ret_panel);

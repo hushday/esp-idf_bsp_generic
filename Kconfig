@@ -89,6 +89,8 @@ menu "Board Support Package (generic)"
                 bool "ILI9341"
             config BSP_DISPLAY_DRIVER_GC9A01
                 bool "GC9A01"
+            config BSP_DISPLAY_DRIVER_GC9107
+                bool "GC9107"
         endchoice
 
         menu "Rotation"
@@ -173,14 +175,14 @@ menu "Board Support Package (generic)"
 
         config BSP_DISPLAY_GAP_X
             depends on BSP_DISPLAY_GAP_SET
-            int "Extra gap on y axis"
+            int "Extra gap on X axis"
             default 0
             help
                 Extra gap on x axis, in pixels.
 
         config BSP_DISPLAY_GAP_Y
             depends on BSP_DISPLAY_GAP_SET
-            int "Extra gap on y axis"
+            int "Extra gap on Y axis"
             default 0
             help
                 Extra gap on y axis, in pixels.

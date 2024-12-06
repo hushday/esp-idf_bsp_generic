@@ -33,6 +33,7 @@ static esp_err_t panel_st7735_swap_xy(esp_lcd_panel_t *panel, bool swap_axes);
 static esp_err_t panel_st7735_set_gap(esp_lcd_panel_t *panel, int x_gap,
                                       int y_gap);
 static esp_err_t panel_st7735_disp_on_off(esp_lcd_panel_t *panel, bool on_off);
+static esp_err_t panel_st7735_sleep(esp_lcd_panel_t *panel, bool sleep);
 
 typedef struct {
     esp_lcd_panel_t base;
@@ -115,6 +116,7 @@ esp_lcd_new_panel_st7735(const esp_lcd_panel_io_handle_t io,
     st7735->base.mirror = panel_st7735_mirror;
     st7735->base.swap_xy = panel_st7735_swap_xy;
     st7735->base.disp_on_off = panel_st7735_disp_on_off;
+    st7735->base.disp_sleep = panel_st7735_sleep;
     *ret_panel = &(st7735->base);
     ESP_LOGD(TAG, "new st7735 panel @%p", st7735);
 
@@ -154,7 +156,9 @@ static esp_err_t panel_st7735_reset(esp_lcd_panel_t *panel)
         gpio_set_level(st7735->reset_gpio_num, !st7735->reset_level);
         vTaskDelay(pdMS_TO_TICKS(10));
     } else { // perform software reset
-        esp_lcd_panel_io_tx_param(io, LCD_CMD_SWRESET, NULL, 0);
+        ESP_RETURN_ON_ERROR(
+            esp_lcd_panel_io_tx_param(io, LCD_CMD_SWRESET, NULL, 0), TAG,
+            "io tx param failed");
         vTaskDelay(pdMS_TO_TICKS(
             20)); // spec, wait at least 5m before sending new command
     }
@@ -168,52 +172,77 @@ static esp_err_t panel_st7735_init(esp_lcd_panel_t *panel)
     esp_lcd_panel_io_handle_t io = st7735->io;
     // LCD goes into sleep mode and display will be turned off after power on
     // reset, exit sleep mode first
-    esp_lcd_panel_io_tx_param(io, LCD_CMD_SLPOUT, NULL, 0);
+    ESP_RETURN_ON_ERROR(esp_lcd_panel_io_tx_param(io, LCD_CMD_SLPOUT, NULL, 0),
+                        TAG, "io tx param failed");
     vTaskDelay(pdMS_TO_TICKS(100));
 
     // Start ===== The parameters of each manufacturer are different, please
     // configure according to the manufacturer's demo Frame Rate
-    esp_lcd_panel_io_tx_param(io, 0xB1, (uint8_t[]){0x05, 0x3A, 0x3A}, 3);
-    esp_lcd_panel_io_tx_param(io, 0xB2, (uint8_t[]){0x05, 0x3A, 0x3A}, 3);
-    esp_lcd_panel_io_tx_param(
-        io, 0xB3, (uint8_t[]){0x05, 0x3A, 0x3A, 0x05, 0x3A, 0x3A}, 6);
+    ESP_RETURN_ON_ERROR(
+        esp_lcd_panel_io_tx_param(io, 0xB1, (uint8_t[]){0x05, 0x3A, 0x3A}, 3),
+        TAG, "io tx param failed");
+    ESP_RETURN_ON_ERROR(
+        esp_lcd_panel_io_tx_param(io, 0xB2, (uint8_t[]){0x05, 0x3A, 0x3A}, 3),
+        TAG, "io tx param failed");
+    ESP_RETURN_ON_ERROR(
+        esp_lcd_panel_io_tx_param(
+            io, 0xB3, (uint8_t[]){0x05, 0x3A, 0x3A, 0x05, 0x3A, 0x3A}, 6),
+        TAG, "io tx param failed");
     // Power Sequence
-    esp_lcd_panel_io_tx_param(io, 0xB4, (uint8_t[]){0x03}, 1);
-    esp_lcd_panel_io_tx_param(io, 0xC0, (uint8_t[]){0x44, 0x04, 0x04}, 3);
-    esp_lcd_panel_io_tx_param(io, 0xC1, (uint8_t[]){0xC0}, 1);
-    esp_lcd_panel_io_tx_param(io, 0xC2, (uint8_t[]){0x0D, 0x00}, 2);
-    esp_lcd_panel_io_tx_param(io, 0xC3, (uint8_t[]){0x8D, 0x6A}, 2);
-    esp_lcd_panel_io_tx_param(io, 0xC4, (uint8_t[]){0x8D, 0xEE}, 2);
+    ESP_RETURN_ON_ERROR(
+        esp_lcd_panel_io_tx_param(io, 0xB4, (uint8_t[]){0x03}, 1), TAG,
+        "io tx param failed");
+    ESP_RETURN_ON_ERROR(
+        esp_lcd_panel_io_tx_param(io, 0xC0, (uint8_t[]){0x44, 0x04, 0x04}, 3),
+        TAG, "io tx param failed");
+    ESP_RETURN_ON_ERROR(
+        esp_lcd_panel_io_tx_param(io, 0xC1, (uint8_t[]){0xC0}, 1), TAG,
+        "io tx param failed");
+    ESP_RETURN_ON_ERROR(
+        esp_lcd_panel_io_tx_param(io, 0xC2, (uint8_t[]){0x0D, 0x00}, 2), TAG,
+        "io tx param failed");
+    ESP_RETURN_ON_ERROR(
+        esp_lcd_panel_io_tx_param(io, 0xC3, (uint8_t[]){0x8D, 0x6A}, 2), TAG,
+        "io tx param failed");
+    ESP_RETURN_ON_ERROR(
+        esp_lcd_panel_io_tx_param(io, 0xC4, (uint8_t[]){0x8D, 0xEE}, 2), TAG,
+        "io tx param failed");
 
     // VCOM
-    esp_lcd_panel_io_tx_param(io, 0xC5, (uint8_t[]){0x15}, 1);
+    ESP_RETURN_ON_ERROR(
+        esp_lcd_panel_io_tx_param(io, 0xC5, (uint8_t[]){0x15}, 1), TAG,
+        "io tx param failed");
 
     // Gamma Sequence
-    esp_lcd_panel_io_tx_param(
-        io, 0xE0,
-        (uint8_t[]){0x1C, 0x27, 0x11, 0x15, 0x25, 0x1E, 0x19, 0x1F, //
-                    0x20, 0x20, 0x2A, 0x39, 0x00, 0x1C, 0x00, 0x10},
-        16);
-    esp_lcd_panel_io_tx_param(
-        io, 0xE1,
-        (uint8_t[]){0x10, 0x24, 0x10, 0x17, 0x28, 0x22, 0x1D, 0x22, //
-                    0x23, 0x23, 0x2D, 0x3B, 0x00, 0x1F, 0x07, 0x10},
-        16);
+    ESP_RETURN_ON_ERROR(
+        esp_lcd_panel_io_tx_param(
+            io, 0xE0,
+            (uint8_t[]){0x1C, 0x27, 0x11, 0x15, 0x25, 0x1E, 0x19, 0x1F, //
+                        0x20, 0x20, 0x2A, 0x39, 0x00, 0x1C, 0x00, 0x10},
+            16),
+        TAG, "io tx param failed");
+    ESP_RETURN_ON_ERROR(
+        esp_lcd_panel_io_tx_param(
+            io, 0xE1,
+            (uint8_t[]){0x10, 0x24, 0x10, 0x17, 0x28, 0x22, 0x1D, 0x22, //
+                        0x23, 0x23, 0x2D, 0x3B, 0x00, 0x1F, 0x07, 0x10},
+            16),
+        TAG, "io tx param failed");
 
     // mode
-    esp_lcd_panel_io_tx_param(io, LCD_CMD_TEON, (uint8_t[]){0x00}, 1);
+    ESP_RETURN_ON_ERROR(
+        esp_lcd_panel_io_tx_param(io, LCD_CMD_TEON, (uint8_t[]){0x00}, 1), TAG,
+        "io tx param failed");
     // end ============================
 
-    esp_lcd_panel_io_tx_param(io, LCD_CMD_COLMOD,
-                              (uint8_t[]){
-                                  st7735->colmod_cal,
-                              },
-                              1);
-    esp_lcd_panel_io_tx_param(io, LCD_CMD_MADCTL,
-                              (uint8_t[]){
-                                  st7735->madctl_val,
-                              },
-                              1);
+    ESP_RETURN_ON_ERROR(
+        esp_lcd_panel_io_tx_param(io, LCD_CMD_COLMOD,
+                                  (uint8_t[]){st7735->colmod_cal}, 1),
+        TAG, "io tx param failed");
+    ESP_RETURN_ON_ERROR(
+        esp_lcd_panel_io_tx_param(io, LCD_CMD_MADCTL,
+                                  (uint8_t[]){st7735->madctl_val}, 1),
+        TAG, "io tx param failed");
 
     return ESP_OK;
 }
@@ -233,26 +262,26 @@ static esp_err_t panel_st7735_draw_bitmap(esp_lcd_panel_t *panel, int x_start,
     y_end += st7735->y_gap;
 
     // define an area of frame memory where MCU can access
-    esp_lcd_panel_io_tx_param(io, LCD_CMD_CASET,
-                              (uint8_t[]){
-                                  (x_start >> 8) & 0xFF,
-                                  x_start & 0xFF,
-                                  ((x_end - 1) >> 8) & 0xFF,
-                                  (x_end - 1) & 0xFF,
-                              },
-                              4);
-    esp_lcd_panel_io_tx_param(io, LCD_CMD_RASET,
-                              (uint8_t[]){
-                                  (y_start >> 8) & 0xFF,
-                                  y_start & 0xFF,
-                                  ((y_end - 1) >> 8) & 0xFF,
-                                  (y_end - 1) & 0xFF,
-                              },
-                              4);
+    ESP_RETURN_ON_ERROR(
+        esp_lcd_panel_io_tx_param(
+            io, LCD_CMD_CASET,
+            (uint8_t[]){(x_start >> 8) & 0xFF, x_start & 0xFF,
+                        ((x_end - 1) >> 8) & 0xFF, (x_end - 1) & 0xFF},
+            4),
+        TAG, "io tx param failed");
+    ESP_RETURN_ON_ERROR(
+        esp_lcd_panel_io_tx_param(
+            io, LCD_CMD_RASET,
+            (uint8_t[]){(y_start >> 8) & 0xFF, y_start & 0xFF,
+                        ((y_end - 1) >> 8) & 0xFF, (y_end - 1) & 0xFF},
+            4),
+        TAG, "io tx param failed");
     // transfer frame buffer
     size_t len =
         (x_end - x_start) * (y_end - y_start) * st7735->fb_bits_per_pixel / 8;
-    esp_lcd_panel_io_tx_color(io, LCD_CMD_RAMWR, color_data, len);
+    ESP_RETURN_ON_ERROR(
+        esp_lcd_panel_io_tx_color(io, LCD_CMD_RAMWR, color_data, len), TAG,
+        "io tx param failed");
 
     return ESP_OK;
 }
@@ -268,7 +297,8 @@ static esp_err_t panel_st7735_invert_color(esp_lcd_panel_t *panel,
     } else {
         command = LCD_CMD_INVOFF;
     }
-    esp_lcd_panel_io_tx_param(io, command, NULL, 0);
+    ESP_RETURN_ON_ERROR(esp_lcd_panel_io_tx_param(io, command, NULL, 0), TAG,
+                        "io tx param failed");
     return ESP_OK;
 }
 
@@ -287,8 +317,10 @@ static esp_err_t panel_st7735_mirror(esp_lcd_panel_t *panel, bool mirror_x,
     } else {
         st7735->madctl_val &= ~LCD_CMD_MY_BIT;
     }
-    esp_lcd_panel_io_tx_param(io, LCD_CMD_MADCTL,
-                              (uint8_t[]){st7735->madctl_val}, 1);
+    ESP_RETURN_ON_ERROR(
+        esp_lcd_panel_io_tx_param(io, LCD_CMD_MADCTL,
+                                  (uint8_t[]){st7735->madctl_val}, 1),
+        TAG, "io tx param failed");
     return ESP_OK;
 }
 
@@ -301,8 +333,10 @@ static esp_err_t panel_st7735_swap_xy(esp_lcd_panel_t *panel, bool swap_axes)
     } else {
         st7735->madctl_val &= ~LCD_CMD_MV_BIT;
     }
-    esp_lcd_panel_io_tx_param(io, LCD_CMD_MADCTL,
-                              (uint8_t[]){st7735->madctl_val}, 1);
+    ESP_RETURN_ON_ERROR(
+        esp_lcd_panel_io_tx_param(io, LCD_CMD_MADCTL,
+                                  (uint8_t[]){st7735->madctl_val}, 1),
+        TAG, "io tx param failed");
     return ESP_OK;
 }
 
@@ -325,6 +359,24 @@ static esp_err_t panel_st7735_disp_on_off(esp_lcd_panel_t *panel, bool on_off)
     } else {
         command = LCD_CMD_DISPOFF;
     }
-    esp_lcd_panel_io_tx_param(io, command, NULL, 0);
+    ESP_RETURN_ON_ERROR(esp_lcd_panel_io_tx_param(io, command, NULL, 0), TAG,
+                        "io tx param failed");
+    return ESP_OK;
+}
+
+static esp_err_t panel_st7735_sleep(esp_lcd_panel_t *panel, bool sleep)
+{
+    st7735_panel_t *st7735 = __containerof(panel, st7735_panel_t, base);
+    esp_lcd_panel_io_handle_t io = st7735->io;
+    int command = 0;
+    if (sleep) {
+        command = LCD_CMD_SLPIN;
+    } else {
+        command = LCD_CMD_SLPOUT;
+    }
+    ESP_RETURN_ON_ERROR(esp_lcd_panel_io_tx_param(io, command, NULL, 0), TAG,
+                        "io tx param failed");
+    vTaskDelay(pdMS_TO_TICKS(100));
+
     return ESP_OK;
 }

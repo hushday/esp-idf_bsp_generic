@@ -1,0 +1,23 @@
+CONFIG_IDF_TARGET="esp32"
+
+#
+# Board Support Package (generic)
+#
+
+#
+# Display
+#
+
+#
+# Connection
+#
+CONFIG_BSP_DISPLAY_SCLK_GPIO=15
+CONFIG_BSP_DISPLAY_MOSI_GPIO=2
+CONFIG_BSP_DISPLAY_CS_GPIO=5
+CONFIG_BSP_DISPLAY_DC_GPIO=4
+CONFIG_BSP_DISPLAY_RST_GPIO=-1
+CONFIG_BSP_DISPLAY_BACKLIGHT_GPIO=18
+# end of Connection
+
+# end of Display
+# end of Board Support Package (generic)
