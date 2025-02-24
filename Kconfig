@@ -208,6 +208,14 @@ menu "Board Support Package (generic)"
             default n
             help
                 Whether to enable double framebuf.
+
+        config BSP_LVGL_PORT_TASK_STACK_SIZE
+            int "LVGL port task stack size (bytes)"
+            default 0
+            range 0 65536
+            help
+                Specifies the stack size for the LVGL port task in bytes.
+                If set to 0, the default stack size defined by the LVGL port will be used.
     endmenu
 
 endmenu

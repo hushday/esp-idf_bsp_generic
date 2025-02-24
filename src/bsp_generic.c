@@ -307,6 +307,9 @@ lv_display_t *bsp_display_start(void)
                 .buff_spiram = false,
             },
     };
+    if (CONFIG_BSP_LVGL_PORT_TASK_STACK_SIZE > 0) {
+        cfg.lvgl_port_cfg.task_stack = CONFIG_BSP_LVGL_PORT_TASK_STACK_SIZE;
+    }
     return bsp_display_start_with_config(&cfg);
 }
 
