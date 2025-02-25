@@ -1,14 +1,14 @@
 #pragma once
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include "sdkconfig.h"
 #include "driver/i2c_master.h"
 
 #include "bsp/display.h"
 #include "esp_lvgl_port.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 // Pinout
 
