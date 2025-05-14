@@ -37,42 +37,42 @@ menu "Board Support Package (generic)"
             config BSP_DISPLAY_SCLK_GPIO
                 int "Display SPI SCLK GPIO"
                 default 0
-                range -1 ENV_GPIO_OUT_RANGE_MAX
+                range -1 21
                 help
                     The SCLK pin for SPI display.
 
             config BSP_DISPLAY_MOSI_GPIO
                 int "Display SPI MOSI GPIO"
                 default 0
-                range -1 ENV_GPIO_OUT_RANGE_MAX
+                range -1 21
                 help
                     The MOSI pin for SPI display.
 
             config BSP_DISPLAY_CS_GPIO
                 int "Display SPI CS GPIO"
                 default 0
-                range -1 ENV_GPIO_OUT_RANGE_MAX
+                range -1 21
                 help
                     The CS pin for SPI display.
 
             config BSP_DISPLAY_DC_GPIO
                 int "Display SPI DC GPIO"
                 default 0
-                range -1 ENV_GPIO_OUT_RANGE_MAX
+                range -1 21
                 help
                     The DC pin for SPI display.
 
             config BSP_DISPLAY_RST_GPIO
                 int "Display reset GPIO"
                 default 0
-                range -1 ENV_GPIO_OUT_RANGE_MAX
+                range -1 21
                 help
                     The reset pin for display.
 
             config BSP_DISPLAY_BACKLIGHT_GPIO
                 int "Display backlight GPIO"
                 default -1
-                range -1 ENV_GPIO_OUT_RANGE_MAX
+                range -1 21
                 help
                     The backlight pin for display.
         endmenu
