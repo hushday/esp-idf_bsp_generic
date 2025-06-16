@@ -31,6 +31,8 @@ static const char *TAG = "bsp_generic";
 
 static lv_display_t *disp;
 
+static lvgl_port_display_cfg_t display_cfg;
+
 static bool i2c_initialized = false;
 
 i2c_master_bus_handle_t bsp_i2c_bus_handle;
@@ -288,6 +290,7 @@ static lv_display_t *bsp_display_lcd_init(const bsp_display_cfg_t *cfg)
 #endif
         }};
 
+    display_cfg = disp_cfg;
     return lvgl_port_add_disp(&disp_cfg);
 }
 
@@ -326,6 +329,8 @@ lv_display_t *bsp_display_start_with_config(const bsp_display_cfg_t *cfg)
 }
 
 lv_indev_t *bsp_display_get_input_dev(void) { return NULL; }
+
+lvgl_port_display_cfg_t *bsp_display_get_config(void) { return &display_cfg; }
 
 void bsp_display_rotate(lv_disp_t *disp, lv_display_rotation_t rotation)
 {
